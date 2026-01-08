@@ -1,0 +1,332 @@
+Houdheyfa y.:
+# ============================================
+# PYTHON BACKEND: AI_Multilingue mit Ollama + gTTS
+# ============================================
+
+import ollama
+from gtts import gTTS
+from playsound import playsound
+from langdetect import detect
+import os
+
+class AI_Multilingue:
+    """
+    Une IA qui discute en utilisant Ollama et répond vocalement
+    en détectant automatiquement la langue (Arabe, Français, Anglais).
+    """
+    def __init__(self):
+        self.supported_languages = {
+            'ar': 'Arabe',
+            'fr': 'Français',
+            'en': 'Anglais'
+        }
+        print("Application IA Multilingue prête.")
+        print("Langues supportées pour la voix : Arabe, Français, Anglais.")
+
+    def detect_language(self, text):
+        try:
+            lang_code = detect(text)
+            return lang_code
+        except Exception as e:
+            print(f"\n[Avertissement] Impossible de détecter la langue : {e}")
+            return None
+
+    def speak(self, text):
+        lang_code = self.detect_language(text)
+        if lang_code not in self.supported_languages:
+            print(f"\n[Info] Langue détectée '{lang_code}' non supportée pour la voix. Affichage du texte uniquement.")
+            return
+        print(f" (Langue détectée : {self.supported_languages[lang_code]})")
+        try:
+            tts = gTTS(text=text, lang=lang_code, slow=False)
+            audio_file = "response.mp3"
+            tts.save(audio_file)
+            playsound(audio_file)
+            os.remove(audio_file)
+        except Exception as e:
+            print(f"\n[Erreur] Impossible de générer ou jouer l'audio : {e}")
+
+    def start_chat(self):
+        print("\n--- Début de la conversation ---")
+        print("Posez vos questions en français, anglais ou arabe. Tapez 'quitter' pour arrêter.")
+        messages = []
+        while True:
+            prompt = input("\nVous : ")
+            if prompt.lower() == 'quitter':
+                break
+            messages.append({'role': 'user', 'content': prompt})
+            try:
+                response_stream = ollama.chat(
+                    model='llama3',
+                    messages=messages,
+                    stream=True
+                )
+                full_response = ""
+                print("IA : ", end="", flush=True)
+                for chunk in response_stream:
+                    part = chunk['message']['content']
+                    print(part, end="", flush=True)
+                    full_response += part
+                if full_response:
+                    self.speak(full_response)
+                messages.append({'role': 'assistant', 'content': full_response})
+            except Exception as e:
+                print(f"Désolé, une erreur de connexion avec Ollama est survenue : {e}")
+
+if name == "__main__":
+    print("Vérifiez que votre application Ollama est en cours d'exécution...")
+    app = AI_Multilingue()
+    app.start_chat()
+    print("\n--- Fin de la conversation ---")
+
+
+# ============================================
+# EDGE BROWSER TABS METADATA
+# ============================================
+
+edge_all_open_tabs = [
+    {"pageTitle":"Telegram Web","pageUrl":"https://web.telegram.org/k","tabId":274665992,"isCurrent":True},
+    {"pageTitle":"kernel.c - Arbeitsbereich - Visual Studio Code","pageUrl":"https://vscode.dev/?vscode-lang=de","tabId":274665993,"isCurrent":False},
+    {"pageTitle":"Google Meet – unw-swks-xub","pageUrl":"https://meet.google.com/unw-swks-xub?pli=1&authuser=1","tabId":274666151,"isCurrent":False},
+    {"pageTitle":"HTML Online Editor (Compiler, Interpreter & Runner)","pageUrl":"https://onecompiler.com/html/449vm58cs","tabId":274666219,"isCurrent":False}
+]
+
+
+# ============================================
+# FLUTTER FRONTEND: SettingsPage mit Theme + Sprache + Mikrofon
+# ============================================
+
+flutter_code = """
+import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
+
+class ThemeProvider extends ChangeNotifier {
+  ThemeMode _themeMode =
+
+ThemeMode.light;
+  ThemeMode get themeMode => _themeMode;
+  void toggleTheme(bool isDarkMode) {
+    _themeMode = isDarkMode ? ThemeMode.dark : ThemeMode.light;
+    notifyListeners();
+  }
+}
+
+void main() {
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: const MyApp(),
+    ),
+  );
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Paramètres',
+      theme: ThemeData.light(),
+      darkTheme: ThemeData.dark(),
+      themeMode: Provider.of<ThemeProvider>(context).themeMode,
+      home: const SettingsPage(),
+    );
+  }
+}
+
+class SettingsPage extends StatefulWidget {
+  const SettingsPage({Key? key}) : super(key: key);
+  @override
+  _SettingsPageState createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  String _selectedLanguage = 'Français';
+
+  void _requestVoicePermission() async {
+    var status = await Permission.microphone.request();
+    if (status.isGranted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Autorisation du microphone accordée !')),
+      );
+    } else if (status.isDenied) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Autorisation du microphone refusée.')),
+      );
+    } else if (status.isPermanentlyDenied) {
+      openAppSettings();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Paramètres')),
+      body: ListView(
+        children: [
+          SwitchListTile(
+            title: const Text('Thème sombre'),
+            value: Provider.of<ThemeProvider>(context).themeMode == ThemeMode.dark,
+            onChanged: (isDarkMode) {
+              Provider.of<ThemeProvider>(context, listen: false).toggleTheme(isDarkMode);
+            },
+          ),
+          const Divider(),
+          ListTile(
+            title: const Text('Autorisation vocale'),
+            subtitle: const Text('Autoriser l\\'accès au microphone'),
+            trailing: IconButton(
+              icon: const Icon(Icons.keyboard_voice),
+              onPressed: _requestVoicePermission,
+            ),
+          ),
+          const Divider(),
+          ListTile(
+            title: const Text('Langue'),
+            trailing: DropdownButton<String>(
+              value: _selectedLanguage,
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  setState(() {
+                    _selectedLanguage = newValue;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Langue changée en : $newValue')),
+                    );
+                  });
+                }
+              },
+              items: <String>['العربية', 'Français', 'English']
+                  .map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+"""
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>REVIZO | Elite Edition 2026</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root { --primary: #4f46e5; --bg: #f8fafc; }
+    body { font-family: sans-serif; background: var(--bg); color: #1e293b; margin: 0; overflow-x: hidden; }
+    #boot-layer { position: fixed; inset: 0; background: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .page { display: none; width: 100%; max-width: 450px; margin: 0 auto; padding: 20px; min-height: 100vh; flex-direction: column; }
+    .active { display: flex; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .btn-elite { background: var(--primary); color: white; border-radius: 16px; padding: 18px; font-weight: bold; text-align: center; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 0 #3730a3; }
+    .btn-elite:active { transform: translateY(4px); box-shadow: none; }
+    .card { background: white; border-radius: 24px; padding: 20px; border: 1px solid #e2e8f0; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .card:hover { border-color: var(--primary); transform: scale(1.02); }
+    .progress-bar { height: 10px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.5s ease; }
+  </style>
+</head>
+<body>
+
+  <!-- BOOT LOADER -->
+  <div id="boot-layer">
+    <div class="spinner"></div>
+    <h1 style="margin-top: 20px; font-weight: 800; letter-spacing: 2px;">REVIZO</h1>
+    <p style="font-size: 10px; color: #94a3b8; margin-top: 10px;">POWERED BY NOVA CORE</p>
+  </div>
+
+  <!-- MAIN APP -->
+  <main id="app">
+    <!-- LOGIN -->
+    <div id="page-login" class="page active justify-center text-center">
+      <h2 class="text-4xl font-bold mb-4">Willkommen</h2>
+      <p class="text-slate-500 mb-10">Bereit für deine tägliche Dosis Wissen?</p>
+      <input type="text" id="name-input" placeholder="Dein Name" class="w-full p-4 bg-white border border-slate-200 rounded-2xl mb-6 text-center text-lg outline-none focus:border-indigo-500">
+      <div onclick="saveUser()" class="btn-elite uppercase tracking-widest">Starten</div>
+    </div>
+
+    <!-- HOME -->
+    <div id="page-home" class="page">
+      <header class="flex justify-between items-center py-6 mb-6">
+        <div>
+          <p class="text-xs text-indigo-600 font-bold uppercase tracking-widest">Profil</p>
+          <h3 id="display-name" class="text-2xl font-bold">Lade...</h3>
+        </div>
+        <div class="text-right">
+          <p class="text-xs text-slate-400 font-bold uppercase">Level <span id="display-lvl">1</span></p>
+          <p id="display-xp" class="font-black text-indigo-600">0 XP</p>
+        </div>
+      </header>
+
+      <div class="card bg-indigo-600 border-none mb-8 text-white">
+        <p class="text-xs font-bold opacity-70 mb-2">XP FORTSCHRITT</p>
+        <div class="progress-bar bg-indigo-900"><div id="bar-xp" class="progress-fill bg-white" style="width: 0%"></div></div>
+      </div>
+
+      <h4 class="font-bold text-slate-400 text-xs uppercase mb-4 tracking-widest">Deine Module</h4>
+      <div class="space-y-4">
+        <div onclick="launchQuiz('Mathe')" class="card flex justify-between items-center">
+          <div><p class="font-bold text-lg">Mathematik</p><p class="text-xs text-slate-400">Logik & Arithmetik</p></div>
+          <div class="text-indigo-600 font-bold">→</div>
+        </div>
+        <div onclick="launchQuiz('Natur')" class="card flex justify-between items-center">
+          <div><p class="font-bold text-lg">Naturwissenschaft</p><p class="text-xs
+
+text-slate-400">Physik & Chemie</p></div>
+          <div class="text-indigo-600 font-bold">→</div>
+        </div>
+        <div onclick="navigate('page-tabs')" class="card flex justify-between items-center">
+          <div><p class="font-bold text-lg">Browser Tabs</p><p class="text-xs text-slate-400">Edge Session</p></div>
+          <div class="text-indigo-600 font-bold">→</div>
+        </div>
+      </div>
+
+      <button onclick="resetApp()" class="mt-auto py-10 opacity-20 text-[10px] font-bold uppercase text-center w-full">Account zurücksetzen</button>
+    </div>
+
+    <!-- QUIZ -->
+    <div id="page-quiz" class="page">
+      <nav class="flex justify-between items-center py-6 mb-10">
+        <button onclick="navigate('page-home')" class="text-slate-400">Abbrechen</button>
+        <div class="progress-bar w-32"><div id="bar-quiz" class="progress-fill" style="width: 0%"></div></div>
+      </nav>
+      <div class="flex-grow flex flex-col justify-center text-center">
+        <p id="quiz-subj" class="text-xs font-bold text-indigo-500 uppercase mb-4">Module</p>
+        <h2 id="q-text" class="text-3xl font-bold mb-12">Frage lädt...</h2>
+        <input type="text" id="q-input" autocomplete="off" placeholder="Deine Antwort" class="w-full bg-transparent border-b-2 border-slate-200 p-4 text-2xl text-center outline-none focus:border-indigo-600 mb-10">
+        <div onclick="submitAnswer()" class="btn-elite">Prüfen</div>
+      </div>
+    </div>
+
+    <!-- EDGE TABS -->
+    <div id="page-tabs" class="page">
+      <h2 class="text-2xl font-bold mb-6">Offene Tabs</h2>
+      <div id="tabs-list" class="space-y-4"></div>
+      <button onclick="navigate('page-home')" class="btn-elite mt-6">Zurück</button>
+    </div>
+  </main>
+
+  <script>
+    // Datenbank
+    const db = {
+      Mathe: [{q: "Was ist 15 x 15 ?", r: "225"}, {q: "Wurzel aus 81 ?", r: "9"}],
+      Natur: [{q: "Symbol für Gold ?", r: "Au"}, {q: "Welcher Planet ist rot ?", r: "Mars"}]
+    };
+
+    // Speicherstand
+    let state = JSON.parse(localStorage.getItem('revizo_final_2026')) || { name: "", xp: 0, lvl: 1, onboarded: false };
+
+    // Edge Tabs Metadata
+    const edge_all_open_tabs = [
+      {"pageTitle":"Telegram Web","pageUrl":"https://web.telegram.org/k","tabId":274665992,"isCurrent":true},
+      {"pageTitle":"kernel.c
